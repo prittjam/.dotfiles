@@ -1,6 +1,9 @@
 (add-to-list 'load-path "~/elisp")
 (add-to-list 'load-path "~/elisp/matlab-emacs")
 
+(add-to-list 'custom-theme-load-path "~/elisp/emacs-color-theme-solarized")
+(load-theme 'solarized t)
+
 ;; --- MATLAB MODE ---
 (load-library "~/elisp/matlab-emacs/matlab-load.el")
 
