@@ -41,8 +41,8 @@ classdef Cass < handle
                         credentials = text{:};
                         this.cass_cfg.keyspace = credentials{1};
                         this.cass_cfg.table = credentials{2};
-                        this.cass_cfg.nodes = char(credentials{3});
-                        this.cass_cfg.replicationFactor = credentials{4};                
+                        this.cass_cfg.nodes = char(strsplit(credentials{3},','));
+                        this.cass_cfg.replicationFactor = str2num(credentials{4});              
                     else
                         error('Config file does not exist');
                     end

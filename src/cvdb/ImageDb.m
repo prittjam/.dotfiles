@@ -8,17 +8,17 @@ classdef ImageDb < handle
             this.cass = Cass(varargin{:});
         end
         
-        function cid = insert_img(this,url)
+        function cid = put_img(this,url)
             filecontents = get_native_img(url);
-            cid = HASH.hash(filecontents);
-            this.insert('image',cid,'raw',filecontents);
+            cid = HASH.hash(filecontents,'MD5');
+            this.put('image',cid,'raw',filecontents);
         end
         
-        function img = select_img(this,cid)
+        function img = get_img(this,cid)
             img = [];
             has_img = this.check('image',cid,'raw');
             if has_img
-                filecontent = this.select('image',cid,'raw');
+                filecontent = this.get('image',cid,'raw');
                 try
                     img = readim(filecontent);
                 catch
@@ -36,11 +36,11 @@ classdef ImageDb < handle
             end
         end
         
-        function [] =  insert(this,table,img_id,key,data)
+        function [] =  put(this,table,img_id,key,data)
             this.cass.put(img_id,data,[table ':' key],[]); 
         end
 
-        function [s,is_found] = select(this,table,img_id,cfg_key)
+        function [s,is_found] = get(this,table,img_id,cfg_key)
             s = [];
             is_found = false;
 

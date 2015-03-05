@@ -10,8 +10,8 @@ classdef ImageCache < handle
     end
 
     methods(Access=public)
-        function this = ImageCache(cid,varargin)
-            this.imagedb = ImageDb();
+        function this = ImageCache(cid,imagedb,varargin)
+            this.imagedb = imagedb;
             this.cid = cid;
             this.map = containers.Map;
             this.vlist = cell(1,1000);
@@ -76,7 +76,7 @@ classdef ImageCache < handle
         end
         
         function img = get_img(this)
-            img = this.imagedb.select_img(this.cid);
+            img = this.imagedb.get_img(this.cid);
         end
 
         function [is_put,xor_key] = put(this,table,name,value,varargin)
@@ -93,8 +93,8 @@ classdef ImageCache < handle
                 if this.cfg.write_cache 
                     if ((~this.imagedb.check(table,this.cid,xor_key) | ...
                          cfg.overwrite))
-                        this.imagedb.insert(table,this.cid, ...
-                                            [name ':' xor_key],value);
+                        this.imagedb.put(table,this.cid, ...
+                                         [name ':' xor_key],value);
                         is_put = true;
                     else
                         error('Cannot put');
@@ -112,8 +112,8 @@ classdef ImageCache < handle
                 v = item.v;
                 xor_key = this.get_xor_key(v);
                 if this.cfg.read_cache
-                    [val,is_found] = this.imagedb.select(table, ...
-                                                         this.cid,[name ':' xor_key]);        
+                    [val,is_found] = this.imagedb.get(table, ...
+                                                      this.cid,[name ':' xor_key]);        
                 end    
             end
         end

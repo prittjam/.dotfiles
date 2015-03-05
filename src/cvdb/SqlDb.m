@@ -45,7 +45,7 @@ classdef SqlDb < SqlBase
             stm.execute();
         end
         
-        function err = ins_img(this, cid, url)
+        function err = put_img(this, cid, url)
             url = get_canonical_path(url);
             stm =  this.connh.prepareStatement(['INSERT INTO imgs' ...
                                 ' (cid, url)' ...
@@ -68,7 +68,7 @@ classdef SqlDb < SqlBase
             is = rs.next();
         end
 
-        function cids = ins_img_set(this,set_name,img_set, ...
+        function cids = put_img_set(this,set_name,img_set, ...
                                     varargin)
             cfg = [];
             cfg.description = [];
@@ -90,10 +90,10 @@ classdef SqlDb < SqlBase
                 for i = 1:length(img_set)
                     url = img_set{i};
                     filecontents = get_native_img(url);
-                    cids{i} = HASH.img(filecontents(:));
+                    cids{i} = HASH.hash(filecontents(:),'MD5');
                     [pth, img_name, ext] = fileparts(img_set{i});
 
-                    err = this.ins_img(cids{i},url);
+                    err = this.put_img(cids{i},url);
                     
                     stm.setString(1, set_name);
                     stm.setString(2, cids{i});
@@ -146,7 +146,7 @@ classdef SqlDb < SqlBase
             end        
         end 
 
-        function img_set = sel_img_set(this, set_name)
+        function img_set = get_img_set(this, set_name)
             img_set = {};
 
             stm = this.connh.prepareStatement(['SELECT COUNT(*) FROM img_sets ' ...
@@ -178,7 +178,7 @@ classdef SqlDb < SqlBase
         end
 
 
-        function [] = ins_stereo_set(this,set_name,img_set,varargin)
+        function [] = put_stereo_set(this,set_name,img_set,varargin)
             cfg = [];
             cfg.description = [];
             cfg.replace = false;
@@ -214,7 +214,7 @@ classdef SqlDb < SqlBase
                         rel_pth = regexpi(img_set{i}{j}, '[^/]*/[^/]*$', ...
                                           'match');
                         if (count == 0) 
-                            this.ins_img(img{j}, img_path_pair{j}, rel_pth, img_name, ext);
+                            this.put_img(img{j}, img_path_pair{j}, rel_pth, img_name, ext);
                         end
                     end
                     
@@ -251,7 +251,7 @@ classdef SqlDb < SqlBase
             end
         end
 
-        function stereo_set = sel_stereo_set(this,set_name)
+        function stereo_set = get_stereo_set(this,set_name)
             stereo_set = {};
             stm = this.connh.prepareStatement(['SELECT COUNT(*) FROM stereo_sets ' ...
                                 'WHERE name=?']);
