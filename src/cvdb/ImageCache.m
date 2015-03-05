@@ -1,4 +1,4 @@
-classdef image_cache < handle
+classdef ImageCache < handle
     properties(Access=private)
         G;
         cid;
@@ -10,8 +10,8 @@ classdef image_cache < handle
     end
 
     methods(Access=public)
-        function this = image_cache(cid,varargin)
-            this.imagedb = imagedb();
+        function this = ImageCache(cid,varargin)
+            this.imagedb = ImageDb();
             this.cid = cid;
             this.map = containers.Map;
             this.vlist = cell(1,1000);

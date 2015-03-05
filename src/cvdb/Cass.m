@@ -33,16 +33,16 @@ classdef Cass < handle
                                                   varargin{:});
             if ~isempty(leftover)
                 cfg.cfg_file = [];
-                cfg = helpers.vl_argparse(leftover{:});
+                cfg = helpers.vl_argparse(cfg,leftover);
                 if ~isempty(cfg.cfg_file)
                     if exist(cfg.cfg_file,'file')
                         fid = fopen(cfg.cfg_file);
                         text = textscan(fid,'%s','Delimiter','\n');
                         credentials = text{:};
-                        cass_cfg.keyspace = credentials{1};
-                        cass_cfg.table = credentials{2};
-                        cass_cfg.nodes = char(credentials{3});
-                        cass_cfg.replicationFactor = credentials{4};                
+                        this.cass_cfg.keyspace = credentials{1};
+                        this.cass_cfg.table = credentials{2};
+                        this.cass_cfg.nodes = char(credentials{3});
+                        this.cass_cfg.replicationFactor = credentials{4};                
                     else
                         error('Config file does not exist');
                     end
