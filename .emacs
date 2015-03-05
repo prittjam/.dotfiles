@@ -21,7 +21,7 @@
 (defalias 'yes-or-no-p 'y-or-n-p)
 
 (setq tags-table-list
-      '("/home.stud/prittjam/src/cvtk2" "/home.stud/prittjam/src/cvdb" "/home.stud/prittjam/src/wbs" "/home.stud/prittjam/src/repeat" "/home.stud/prittjam/src/repeat" "/home.stud/prittjam/src/courses/w2010/ae4m33tdv" "/home.stud/prittjam/src/Fa"))
+      '("~/src/cvtk2" "~/src/cvdb" "~/src/vl"  "~/src/gmrepeat"))
 
 (require 'ctags-update)
 (ctags-update-minor-mode 1)
