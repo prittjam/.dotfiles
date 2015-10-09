@@ -1,5 +1,23 @@
 (add-to-list 'load-path "~/elisp")
 (add-to-list 'load-path "~/elisp/matlab-emacs")
+
+(setq column-number-mode t) 
+
+(require 'sr-speedbar)
+
+(setq 
+    sr-speedbar-width 30
+    speedbar-use-images t
+    speedbar-show-unknown-files t
+    sr-speedbar-right-side t
+    )
+
+(add-hook 'emacs-startup-hook (lambda ()
+  (sr-speedbar-open)
+  (with-current-buffer sr-speedbar-buffer-name
+    (setq window-size-fixed 'width))
+  ))
+
 (if (>= emacs-major-version 24)
     (progn;
       (add-to-list 'custom-theme-load-path "~/elisp/emacs-color-theme-solarized")
@@ -8,20 +26,15 @@
 ;; --- MATLAB MODE ---
 (load-library "~/elisp/matlab-emacs/matlab-load.el")
 
-;(autoload 'octave-mode "octave-mod" nil t)
-;(setq auto-mode-alist
-;      (cons '("\\.m$" . octave-mode) auto-mode-alist))                           
-;
-
 (when (fboundp 'winner-mode)
   (winner-mode 1))
 (put 'erase-buffer 'disabled nil)
 
+(setq tags-table-list
+      '("~/src"))
+
 (setq tags-revert-without-query 1)
 (defalias 'yes-or-no-p 'y-or-n-p)
-
-(setq tags-table-list
-      '("~/src/cvtk2" "~/src/cvdb" "~/src/vl"  "~/src/gmrepeat"))
 
 (require 'ctags-update)
 (ctags-update-minor-mode 1)
@@ -57,3 +70,30 @@
 (setq ido-enable-flex-matching t)
 (setq ido-everywhere t)
 (ido-mode 1)
+
+(when (fboundp 'windmove-default-keybindings)
+  (windmove-default-keybindings))
+
+(defun transpose-buffers (arg)
+  "Transpose the buffers shown in two windows."
+  (interactive "p")
+  (let ((selector (if (>= arg 0) 'next-window 'previous-window)))
+    (while (/= arg 0)
+      (let ((this-win (window-buffer))
+            (next-win (window-buffer (funcall selector))))
+        (set-window-buffer (selected-window) next-win)
+        (set-window-buffer (funcall selector) this-win)
+        (select-window (funcall selector)))
+      (setq arg (if (plusp arg) (1- arg) (1+ arg))))))
+
+(global-set-key [f9] 'recompile)
+
+(setq path-to-ctags "/usr/bin/ctags") ;; <- your ctags path here
+  
+(defun create-tags (dir-name)
+  "Create tags file."
+  (interactive "DDirectory: ")
+  (shell-command
+   (format "ctags -f %s -e -R %s" path-to-ctags (directory-file-name dir-name)))
+  )
+

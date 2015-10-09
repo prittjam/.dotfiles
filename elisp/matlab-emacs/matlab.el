@@ -56,7 +56,7 @@
 (require 'derived)
 
 ;; compatibility
-(if (string-match "X[Ee]macs" emacs-version)
+v(if (string-match "X[Ee]macs" emacs-version)
     (progn
       (defalias 'matlab-make-overlay 'make-extent)
       (defalias 'matlab-overlay-put 'set-extent-property)
