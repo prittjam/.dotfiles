@@ -1,5 +1,4 @@
-(add-to-list 'load-path "~/elisp")
-(add-to-list 'load-path "~/elisp/matlab-emacs")
+(add-to-list 'load-path "~/.emacs.d/elisp/")
 
 (setq column-number-mode t) 
 
@@ -24,7 +23,7 @@
       (load-theme 'solarized t)))
 
 ;; --- MATLAB MODE ---
-(load-library "~/elisp/matlab-emacs/matlab-load.el")
+(load-library "~/.emacs.d/elisp/matlab-emacs/matlab-load.el")
 
 (when (fboundp 'winner-mode)
   (winner-mode 1))
