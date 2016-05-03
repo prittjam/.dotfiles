@@ -97,3 +97,16 @@
    (format "ctags -f %s -e -R %s" path-to-ctags (directory-file-name dir-name)))
   )
 
+;;7(setq load-path (cons "/home/you" load-path)) ;; Adjust path here
+;; Ampl mode
+(setq auto-mode-alist
+      (cons '("\\.mod$" . ampl-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.dat$" . ampl-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.ampl$" . ampl-mode) auto-mode-alist))
+(setq interpreter-mode-alist
+      (cons '("ampl" . ampl-mode)
+            interpreter-mode-alist))
+
+(autoload 'ampl-mode "ampl-mode" "Ampl editing mode." t)
