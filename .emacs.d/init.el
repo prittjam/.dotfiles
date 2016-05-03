@@ -1,4 +1,6 @@
 (add-to-list 'load-path "~/.emacs.d/elisp/")
+(let ((default-directory  "~/.emacs.d/elisp/"))
+  (normal-top-level-add-subdirs-to-load-path))
 
 (setq column-number-mode t) 
 
@@ -19,7 +21,7 @@
 
 (if (>= emacs-major-version 24)
     (progn;
-      (add-to-list 'custom-theme-load-path "~/elisp/emacs-color-theme-solarized")
+      (add-to-list 'custom-theme-load-path "~/.emacs.d/elisp/emacs-color-theme-solarized")
       (load-theme 'solarized t)))
 
 ;; --- MATLAB MODE ---
