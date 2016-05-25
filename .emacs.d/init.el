@@ -1,4 +1,4 @@
-\;; add packages not in melpa for emacs23 for lcraid
+;; add packages not in melpa for emacs23 for lcraid
 (when (< emacs-major-version 24)
   (add-to-list 'load-path "~/.emacs.d/elisp/")
   (let ((default-directory  "~/.emacs.d/elisp/"))
@@ -6,8 +6,8 @@
   
   (require 'color-theme)
   (require 'color-theme-solarized) 
-  (customize-set-variable 'frame-background-mode 'light)
   (color-theme-solarized)
+
   ;;  
   ;; --- MATLAB MODE ---
   (load-library "~/.emacs.d/elisp/matlab-emacs/matlab-load.el"))
@@ -26,8 +26,8 @@
 (setq column-number-mode t) 
 (global-set-key [f9] 'recompile)
 
-
-;;(load-theme 'solarized t))
+(when (>= emacs-major-version 24)
+  (load-theme 'solarized t))
 
 ;;setup speedbar
 (require 'sr-speedbar)
@@ -48,4 +48,4 @@
 ;; setup MATLAB 
 (custom-set-variables
  '(matlab-shell-command "matlab9")
- '(matlab-shell-command-switches '("-nodesktop -nosplash")))
+ '(matlab-shell-command-switches (quote ("-nodesktop -nosplash"))))
