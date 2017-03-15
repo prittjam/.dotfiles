@@ -9,10 +9,19 @@
 (global-set-key "\C-x\C-b" 'buffer-menu)
 
 ;; setup MELPA
+(when 
+    (load
+     (expand-file-name "~/.emacs.d/elpa/package.el"))
+  (package-initialize))
+
+
+(when (>= emacs-major-version 24) 
+  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+
 (require 'package) ;; You might already have this line
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/"))
-(when (< emacs-major-version 24)
+(when (< emacs-major-version 24) 
   ;; For important compatibility libraries like cl-lib
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
 (package-initialize) ;; You might already have this line
@@ -37,11 +46,11 @@
 ;;(global-linum-mode t) 
 
 ;; setup elpy
-(elpy-enable)
-(elpy-use-ipython)
-(setq elpy-rpc-python-command "/usr/bin/python3")
-(setq python-shell-interpreter "/usr/bin/python3")
-;; use flycheck not flymake with elpy
+;;(elpy-enable)
+;;(elpy-use-ipython)
+;;(setq elpy-rpc-python-command "/usr/bin/python3")
+;;(setq python-shell-interpreter "/usr/bin/python3")
+;;;; use flycheck not flymake with elpy
 ;;(when (require 'flycheck nil t)
 ;;  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
 ;;  (add-hook 'elpy-mode-hook 'flycheck-mode))
@@ -127,3 +136,25 @@
 (custom-set-variables
  '(matlab-shell-command "matlab9")
  '(matlab-shell-command-switches (quote ("-nodesktop -nosplash"))))
+
+
+;;; This was installed by package-install.el.
+;;; This provides support for the package system and
+;;; interfacing with ELPA, the package archive.
+;;; Move this code earlier if you want to reference
+;;; packages in your .emacs.
+(when
+    (load
+     (expand-file-name "~/.emacs.d/elpa/package.el"))
+  (package-initialize))
+
+
+;;; This was installed by package-install.el.
+;;; This provides support for the package system and
+;;; interfacing with ELPA, the package archive.
+;;; Move this code earlier if you want to reference
+;;; packages in your .emacs.
+(when
+    (load
+     (expand-file-name "~/.emacs.d/elpa/package.el"))
+  (package-initialize))
