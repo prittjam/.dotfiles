@@ -8,73 +8,30 @@
 
 (global-set-key "\C-x\C-b" 'buffer-menu)
 
-;; setup MELPA
-(when 
-    (load
-     (expand-file-name "~/.emacs.d/elpa/package.el"))
-  (package-initialize))
-
-
-(when (>= emacs-major-version 24) 
-  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
-
-(require 'package) ;; You might already have this line
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/"))
-(when (< emacs-major-version 24) 
-  ;; For important compatibility libraries like cl-lib
-  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
-(package-initialize) ;; You might already have this line
-
-(defvar myPackages
-  '(better-defaults
-    ein ;; add the ein package (Emacs ipython notebook)
-    elpy
-    flycheck
-    material-theme
-    py-autopep8))
-
-(mapc #'(lambda (package)
-	  (unless (package-installed-p package)
-	    (package-install package)))
-      myPackages)
-
 ;; hide the startup message
-(setq inhibit-startup-message t) 
+(setq inhibit-startup-message t)
+
+(require 'package)
+(let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
+                    (not (gnutls-available-p))))
+       (proto (if no-ssl "http" "https")))
+  ;; Comment/uncomment these two lines to enable/disable MELPA and MELPA Stable as desired
+  (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
+  ;;(add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
+  (when (< emacs-major-version 24)
+    ;; For important compatibility libraries like cl-lib
+    (add-to-list 'package-archives '("gnu" . (concat proto "://elpa.gnu.org/packages/")))))
+(package-initialize)
+
+(add-to-list 'package-archives
+             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+
+(load-theme 'solarized-light t)
 
 ;; enable line numbers globally
-;;(global-linum-mode t) 
+;; (global-linum-mode t) 
 
-;; setup elpy
-;;(elpy-enable)
-;;(elpy-use-ipython)
-;;(setq elpy-rpc-python-command "/usr/bin/python3")
-;;(setq python-shell-interpreter "/usr/bin/python3")
-;;;; use flycheck not flymake with elpy
-;;(when (require 'flycheck nil t)
-;;  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-;;  (add-hook 'elpy-mode-hook 'flycheck-mode))
-;;
-;; enable autopep8 formatting on save
-;;(require 'py-autopep8)
-;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-;;
-
-(when (< emacs-major-version 24)
-  (add-to-list 'load-path "~/.emacs.d/elisp/")
-  (let ((default-directory  "~/.emacs.d/elisp/"))
-    (normal-top-level-add-subdirs-to-load-path))
-  
-  (require 'color-theme)
-  (require 'color-theme-solarized) 
-  (color-theme-solarized)
-  
-  ;;  
-  ;; --- MATLAB MODE ---
-  (load-library "~/.emacs.d/elisp/matlab-emacs/matlab-load.el"))
-
-
-;; swap buffers with C-c p
+;; swap buffers with C3-c p
 (setq swapping-buffer nil)
 (setq swapping-window nil)
 (defun swap-buffers-in-windows ()
@@ -105,8 +62,6 @@
 (setq column-number-mode t) 
 (global-set-key [f9] 'recompile)
 
-(when (>= emacs-major-version 24)
-  (load-theme 'solarized t))
 
 ;;setup speedbar
 (require 'sr-speedbar)
@@ -124,7 +79,6 @@
 				  (setq window-size-fixed 'width))
 				))
 
-
 ;; uniquify.el is a helper routine to help give buffer names a better unique name.
 (when (load "uniquify" 'NOERROR)
   (require 'uniquify)
@@ -134,27 +88,16 @@
 
 ;; setup MATLAB 
 (custom-set-variables
- '(matlab-shell-command "matlab9")
- '(matlab-shell-command-switches (quote ("-nodesktop -nosplash"))))
-
-
-;;; This was installed by package-install.el.
-;;; This provides support for the package system and
-;;; interfacing with ELPA, the package archive.
-;;; Move this code earlier if you want to reference
-;;; packages in your .emacs.
-(when
-    (load
-     (expand-file-name "~/.emacs.d/elpa/package.el"))
-  (package-initialize))
-
-
-;;; This was installed by package-install.el.
-;;; This provides support for the package system and
-;;; interfacing with ELPA, the package archive.
-;;; Move this code earlier if you want to reference
-;;; packages in your .emacs.
-(when
-    (load
-     (expand-file-name "~/.emacs.d/elpa/package.el"))
-  (package-initialize))
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(matlab-shell-command "matlab")
+ '(matlab-shell-command-switches (quote ("-nodesktop -nosplash")))
+ '(package-selected-packages (quote (sr-speedbar matlab-mode solarized-theme))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
