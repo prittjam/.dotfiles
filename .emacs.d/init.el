@@ -13,9 +13,7 @@
 (package-initialize)
 
 (defvar myPackages
-  '(better-defaults
-    ein
-    elpy
+  '(elpy
     flycheck
     material-theme
     py-autopep8
@@ -32,10 +30,10 @@
 (pyvenv-activate "~/virtualenvs/py36")
 
 (require 'jupyter)
+
 (org-babel-do-load-languages
  'org-babel-load-languages
- '((emacs-lisp . t)
-   (python . t)
+ '((python . t)
    (jupyter . t)))
 
 (setq org-confirm-babel-evaluate nil)   ;don't prompt me to confirm everytime I want to evaluate a block
