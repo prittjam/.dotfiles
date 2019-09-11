@@ -1,10 +1,25 @@
 (require 'package)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-(package-initialize)
 
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+(package-initialize)
+(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+
+(package-refresh-contents)
+
+;;list the packages you want
+(setq package-list 
+      '(lsp-mode lsp-python-ms
+		 color-theme-sanityinc-tomorrow lsp-ui
+		 company-lsp dap-mode  window-purpose
+		 buffer-move))
+
+
+;; install the missing packages
+(dolist (package package-list)
+  (unless (package-installed-p package)
+    (package-install package)))
+
+(setq package-enable-at-startup nil)
 
 (setq lsp-prefer-flymake nil)
 
@@ -235,8 +250,6 @@ buffer in current window."
 (use-package treemacs-magit
   :after treemacs magit
   :ensure t)
-
-
 
 (ivy-mode 1)
 (setq ivy-use-virtual-buffers t)
