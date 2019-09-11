@@ -1,102 +1,123 @@
-;; hide the startup message
-(setq inhibit-startup-message t)
-(setq ring-bell-function 'ignore)
-(setq-default indent-tabs-mode nil)
-(setq-default tab-width 4)
-(setq indent-line-function 'insert-tab)
-'(tab-stop-list (quote (4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120)))
-
 (require 'package)
-(add-to-list 'package-archives
-       '("melpa" . "http://melpa.org/packages/") t)
-
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (package-initialize)
 
-(defvar myPackages
-  '(elpy
-    flycheck
-    material-theme
-    py-autopep8
-    yasnippet
-    magit)) ;; add the autopep8 package
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
 
-(mapc #'(lambda (package)
-    (unless (package-installed-p package)
-      (package-install package)))
-      myPackages)
+(setq lsp-prefer-flymake nil)
 
-(load-theme 'solarized-light t)
+(eval-when-compile
+  (require 'use-package))
 
-(pyvenv-activate "~/virtualenvs/py36")
+(require 'lsp-mode)
+(require 'color-theme-sanityinc-tomorrow)
 
-(require 'jupyter)
+(use-package lsp-mode
+  :hook (python-mode . lsp)
+  :commands lsp)
 
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((python . t)
-   (jupyter . t)))
+;;(use-package lsp-python)
 
-(setq org-confirm-babel-evaluate nil)   ;don't prompt me to confirm everytime I want to evaluate a block
-(setq org-src-tab-acts-natively t)
+(use-package lsp-python-ms
+  :demand t
+  :ensure nil
+  :hook (python-mode . lsp)
+  :config
 
-(require 'yasnippet)
-(setq yas-snippet-dirs '("~/.emacs.d/snippets"))
-(yas-global-mode 1)
+  ;; for dev build of language server
+  (setq lsp-python-ms-dir
+        (expand-file-name "/opt/python-language-server/bin"))
+  ;; for executable of language server, if it's not symlinked on your PATH
+  (setq lsp-python-ms-executable
+        "/opt/python-language-server/bin/Microsoft.Python.LanguageServer.LanguageServer"))
 
-(setq swapping-buffer nil)
-(setq swapping-window nil)
-(defun swap-buffers-in-windows ()
-  "Swap buffers between two windows"
+(use-package lsp-ui :commands lsp-ui-mode
+  :ensure t
+  :init (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+(use-package company-lsp :commands company-lsp)
+;;(use-package lsp-treemacs :commands lsp-treemacs-errors-list)
+;;(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+(use-package dap-mode)
+
+(use-package dap-python)
+;;(use-package lsp-python :demand)
+
+;; setup dap mode
+;;(dap-mode 1)
+;;(dap-ui-mode 1)
+;;(define-key dap-mode-map (kbd "C-x C-a C-b") 'dap-breakpoint-add)
+;;(define-key dap-mode-map (kbd "C-x C-a C-d") 'dap-breakpoint-delete)
+;;(define-key dap-mode-map (kbd "C-c C-n") 'dap-next)
+;;(define-key dap-mode-map (kbd "C-c C-r") `dap-continue)
+;;(define-key dap-mode-map (kbd "C-c C-s") `dap-step-in)
+;;(define-key dap-mode-map (kbd "C-c C-c") `dap-eval-region)
+;;(define-key dap-mode-map (kbd "C-c C-p") `dap-eval-thing-at-point)
+
+(defun my/debug-directly ()
   (interactive)
-  (if (and swapping-window
-	   swapping-buffer)
-      (let ((this-buffer (current-buffer))
-	    (this-window (selected-window)))
-	(if (and (window-live-p swapping-window)
-		 (buffer-live-p swapping-buffer))
-	    (progn (switch-to-buffer swapping-buffer)
-		   (select-window swapping-window)
-		   (switch-to-buffer this-buffer)
-		   (select-window this-window)
-		   (message "Swapped buffers."))
-	  (message "Old buffer/window killed.  Aborting."))
-	(setq swapping-buffer nil)
-	(setq swapping-window nil))
-    (progn
-      (setq swapping-buffer (current-buffer))
-      (setq swapping-window (selected-window))
-      (message "Buffer and window marked for swapping."))))
+  (dap-debug    (list :type "python"
+                      :args ""
+                      :cwd nil
+                      :target-module nil
+                      :request "launch"
+                      :name "Python :: Run Configuration")))
 
-(global-set-key (kbd "C-c p") 'swap-buffers-in-windows)
+(define-key dap-mode-map (kbd "<f9>") `my/debug-directly)
+
+;; delete trailing whitespace
+(defun my-prog-nuke-trailing-whitespace ()
+  (when (derived-mode-p 'prog-mode)
+    (delete-trailing-whitespace)))
+(add-hook 'before-save-hook 'my-prog-nuke-trailing-whitespace)
+
+;; setup solarized light
+;;(load-theme 'solarized-light t)
+(load-theme 'sanityinc-tomorrow-eighties t)
+
+
+(require 'window-purpose)
+(purpose-mode)
+(add-to-list 'purpose-user-mode-purposes '(python-mode . code))
+(add-to-list 'purpose-user-mode-purposes '(matlab-mode . code))
+(add-to-list 'purpose-user-mode-purposes '(emacs-lisp-mode . code))
+(add-to-list 'purpose-user-mode-purposes '(javascript-mode . code))
+(add-to-list 'purpose-user-mode-purposes '(t-mode . code))
+(add-to-list 'purpose-user-mode-purposes '(dap-ui-repl-mode . repl))
+(add-to-list 'purpose-user-mode-purposes '(matlab-shell-mode . repl))
+(add-to-list 'purpose-user-mode-purposes '(compilation-mode . info))
+(add-to-list 'purpose-user-mode-purposes '(eshell-mode . info))
+(add-to-list 'purpose-user-mode-purposes '(treemacs-mode . treemacs))
+(purpose-compile-user-configuration)
+
 
 ;; setup macros, preferences
-(setq column-number-mode t) 
+(setq column-number-mode t)
 (global-set-key [f9] 'recompile)
+(global-set-key [f5] 'my/debug-directly)
+(global-set-key [remap list-buffers] 'ibuffer)
 
-;; setup speedbar
-(require 'sr-speedbar)
+;; setup yasnippets
+;;(require 'yasnippet)
+;;(yas-global-mode 1)
 
-(setq 
- sr-speedbar-width 30
- speedbar-use-images t
- speedbar-show-unknown-files t
- sr-speedbar-right-side t
- )
+(global-set-key (kbd "C-x b") 'ivy-switch-buffer)
 
-(add-hook 'emacs-startup-hook (lambda ()
-				(sr-speedbar-open)
-				(with-current-buffer sr-speedbar-buffer-name
-				  (setq window-size-fixed 'width))
-				))
+;; setup windmove
+(windmove-default-keybindings)
+(global-set-key (kbd "S-<right>") 'windmove-right)
+(global-set-key (kbd "S-<left>") 'windmove-left)
+(global-set-key (kbd "S-<up>") 'windmove-up)
+(global-set-key (kbd "S-<down>") 'windmove-down)
 
-;; uniquify.el is a helper routine to help give buffer names a better unique name.
-(when (load "uniquify" 'NOERROR)
-  (require 'uniquify)
-  (setq uniquify-buffer-name-style 'forward)
-					;(setq uniquify-buffer-name-style 'post-forward)
-  )
+(use-package buffer-move)
+(global-set-key (kbd "<C-S-up>")     'buf-move-up)
+(global-set-key (kbd "<C-S-down>")   'buf-move-down)
+(global-set-key (kbd "<C-S-left>")   'buf-move-left)
+(global-set-key (kbd "<C-S-right>")  'buf-move-right)
 
-;; setup MATLAB 
+;; setup MATLAB
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -106,52 +127,139 @@
  '(matlab-shell-command-switches (quote ("-nodesktop -nosplash")))
  '(package-selected-packages
    (quote
-    (realgud exec-path-from-shell jupyter ob-ipython window-purpose rope-read-mode ein python-mode matlab-mode color-theme-sanityinc-solarized sr-speedbar solarized-theme))))
+    (0blayout counsel treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil buffer-move ms-python window-purpose yasnippet-snippets yasnippet-classic-snippets use-package sr-speedbar solarized-theme pyenv-mode py-autopep8 projectile matlab-mode material-theme magit lsp-ui lsp-treemacs lsp-python-ms lsp-python lsp-java jupyter helm-lsp flycheck elpy dap-mode company-lsp company-jedi company-box))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(jupyter-repl-traceback ((t (:background "moccasin"))))
- '(region ((t (:background "goldenrod" :foreground "#fdf6e3")))))
+ )
 
-;; setup windmove
-(windmove-default-keybindings)
+(defun toggle-window-dedicated ()
+  "Control whether or not Emacs is allowed to display another
+buffer in current window."
+  (interactive)
+  (message
+   (if (let (window (get-buffer-window (current-buffer)))
+         (set-window-dedicated-p window (not (window-dedicated-p window))))
+       "%s: Can't touch this!"
+     "%s is up for grabs.")
+   (current-buffer)))
 
-(global-set-key (kbd "S-<right>") 'windmove-right)
-(global-set-key (kbd "S-<left>") 'windmove-left)
-(global-set-key (kbd "S-<up>") 'windmove-up)
-(global-set-key (kbd "S-<down>") 'windmove-down)
+(global-set-key (kbd "C-c t") 'toggle-window-dedicated)
 
-(setq org-support-shift-select 'always)
-(add-hook 'org-shiftup-final-hook 'windmove-up)
-(add-hook 'org-shiftleft-final-hook 'windmove-left)
-(add-hook 'org-shiftdown-final-hook 'windmove-down)
-(add-hook 'org-shiftright-final-hook 'windmove-right)
+;; default to python3.6
+(pyvenv-activate "~/.venv/py36")
 
-(global-set-key "\C-x\C-b" 'buffer-menu)
-
-(elpy-enable)
-(add-hook 'elpy-mode-hook
+(add-hook 'python-mode-hook
       (lambda ()
         (setq indent-tabs-mode nil)
-        (setq tab-width 4)
-        (setq python-indent-offset 4)))
+        (setq python-indent 4)
+        (setq tab-width 4))
+      (untabify (point-min) (point-max)))
 
-(setq elpy-company-add-completion-from-shell nil)
-(define-key elpy-mode-map (kbd "C-c C-c") nil)  
 
-(setq split-height-threshold 1200)
-(setq split-width-threshold 2000)
+(use-package treemacs
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+  :config
+  (progn
+    (setq treemacs-collapse-dirs                 (if (executable-find "python3") 3 0)
+          treemacs-deferred-git-apply-delay      0.5
+          treemacs-display-in-side-window        t
+          treemacs-eldoc-display                 t
+          treemacs-file-event-delay              5000
+          treemacs-file-follow-delay             0.2
+          treemacs-follow-after-init             t
+          treemacs-git-command-pipe              ""
+          treemacs-goto-tag-strategy             'refetch-index
+          treemacs-indentation                   2
+          treemacs-indentation-string            " "
+          treemacs-is-never-other-window         nil
+          treemacs-max-git-entries               5000
+          treemacs-missing-project-action        'ask
+          treemacs-no-png-images                 nil
+          treemacs-no-delete-other-windows       t
+          treemacs-position                      'right
+          treemacs-project-follow-cleanup        nil
+          treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-recenter-distance             0.1
+          treemacs-recenter-after-file-follow    nil
+          treemacs-recenter-after-tag-follow     nil
+          treemacs-recenter-after-project-jump   'always
+          treemacs-recenter-after-project-expand 'on-distance
+          treemacs-show-cursor                   nil
+          treemacs-show-hidden-files             t
+          treemacs-silent-filewatch              nil
+          treemacs-silent-refresh                nil
+          treemacs-sorting                       'alphabetic-desc
+          treemacs-space-between-root-nodes      t
+          treemacs-tag-follow-cleanup            t
+          treemacs-tag-follow-delay              1.5
+          treemacs-width                         35)
 
-(setq org-src-window-setup 'current-window)
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
 
-(setq org-display-inline-images t)
-(setq org-redisplay-inline-images t)
-(setq org-startup-with-inline-images "inlineimages")
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode t)
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null (executable-find "python3"))))
+      (`(t . t)
+       (treemacs-git-mode 'deferred))
+      (`(t . _)
+       (treemacs-git-mode 'simple))))
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
 
-;;(require 'window-purpose)
-;;(purpose-mode)
-;;(add-to-list 'purpose-user-mode-purposes '(elpy . py))
-;;(add-to-list 'purpose-user-mode-purposes '(ipython . *IPython*))
-;;(purpose-compile-user-configuration)
+(use-package treemacs-projectile
+  :after treemacs projectile
+  :ensure t)
+
+(use-package treemacs-icons-dired
+  :after treemacs dired
+  :ensure t
+  :config (treemacs-icons-dired-mode))
+
+(use-package treemacs-magit
+  :after treemacs magit
+  :ensure t)
+
+
+
+(ivy-mode 1)
+(setq ivy-use-virtual-buffers t)
+(setq enable-recursive-minibuffers t)
+;; enable this if you want `swiper' to use it
+;; (setq search-default-mode #'char-fold-to-regexp)
+(global-set-key "\C-s" 'swiper)
+(global-set-key (kbd "C-x C-b") 'ivy-switch-buffer)
+(global-set-key (kbd "C-c C-r") 'ivy-resume)
+(global-set-key (kbd "<f6>") 'ivy-resume)
+;;(global-set-key (kbd "M-x") 'counsel-M-x)
+(global-set-key (kbd "C-x C-f") 'counsel-find-file)
+(global-set-key (kbd "<f1> f") 'counsel-describe-function)
+(global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+(global-set-key (kbd "<f1> l") 'counsel-find-library)
+(global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+(global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+(global-set-key (kbd "C-c g") 'counsel-git)
+(global-set-key (kbd "C-c j") 'counsel-git-grep)
+(global-set-key (kbd "C-c k") 'counsel-ag)
+(global-set-key (kbd "C-x l") 'counsel-locate)
+(global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+
+(define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
+(define-key ivy-minibuffer-map (kbd "<ESC>") 'minibuffer-keyboard-quit)
+(define-key swiper-map (kbd "<ESC>") 'minibuffer-keyboard-quit)
