@@ -7,11 +7,11 @@
 (package-refresh-contents)
 
 ;;list the packages you want
-(setq package-list 
+(setq package-list
       '(lsp-mode lsp-python-ms
 		 color-theme-sanityinc-tomorrow lsp-ui
 		 company-lsp dap-mode  window-purpose
-		 buffer-move))
+		 buffer-move jedi matlab-mode))
 
 
 ;; install the missing packages
