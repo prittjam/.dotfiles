@@ -1,74 +1,82 @@
-(require 'package)
-
 (package-initialize)
-(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
+;;(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-
+(require 'package)
+(require 'cl)
+(setq package-check-signature nil)
 (package-refresh-contents)
 
 ;;list the packages you want
 (setq package-list
-      '(lsp-mode lsp-python-ms
-		 color-theme-sanityinc-tomorrow lsp-ui
-		 company-lsp dap-mode  window-purpose
-		 buffer-move jedi matlab-mode))
-
+      '(lsp-mode lsp-python-ms lsp-python
+                 color-theme-sanityinc-tomorrow lsp-ui
+                 company-lsp dap-mode  window-purpose
+                 buffer-move jedi matlab-mode pyvenv
+                 ivy swiper yasnippet))
 
 ;; install the missing packages
 (dolist (package package-list)
   (unless (package-installed-p package)
     (package-install package)))
 
+(require 'color-theme-sanityinc-tomorrow)
+(require 'window-purpose)
+
 (setq package-enable-at-startup nil)
 
-(setq lsp-prefer-flymake nil)
+(yas-global-mode 1)
 
 (eval-when-compile
   (require 'use-package))
 
-(require 'lsp-mode)
-(require 'color-theme-sanityinc-tomorrow)
-
 (use-package lsp-mode
-  :hook (python-mode . lsp)
-  :commands lsp)
-
-;;(use-package lsp-python)
-
-(use-package lsp-python-ms
-  :demand t
-  :ensure nil
-  :hook (python-mode . lsp)
   :config
+  (require 'lsp-clients)
+  (add-hook 'python-mode-hook 'lsp))
+(use-package company-lsp)
+(use-package lsp-ui)
 
-  ;; for dev build of language server
-  (setq lsp-python-ms-dir
-        (expand-file-name "/opt/python-language-server/bin"))
-  ;; for executable of language server, if it's not symlinked on your PATH
-  (setq lsp-python-ms-executable
-        "/opt/python-language-server/bin/Microsoft.Python.LanguageServer.LanguageServer"))
-
-(use-package lsp-ui :commands lsp-ui-mode
+(use-package dap-mode
   :ensure t
-  :init (add-hook 'lsp-mode-hook 'lsp-ui-mode))
-(use-package company-lsp :commands company-lsp)
-;;(use-package lsp-treemacs :commands lsp-treemacs-errors-list)
+  :init
+  :config
+  :bind (:map lsp-mode-map
+	      ("<f10>" . dap-debug-last)
+	      ("<f11>" . my/debug-directly)
+	      ("C-x C-a C-b" . dap-breakpoint-add)
+	      ("C-x C-a C-d" . dap-breakpoint-delete)
+	      ("C-c C-n" . dap-next)
+	      ("C-c C-r" . dap-continue)
+	      ("C-c C-s" . dap-step-in)
+	      ("C-c C-c" . dap-eval-region)
+	      ("C-c C-p" . dap-eval-thing-at-point))
+
+  :hook ((after-init . dap-mode)
+	 (dap-mode . dap-ui-mode)
+	 (python-mode . (lambda () (require 'dap-python)))))
+
 ;;(use-package helm-lsp :commands helm-lsp-workspace-symbol)
-(use-package dap-mode)
 
-(use-package dap-python)
-;;(use-package lsp-python :demand)
+(use-package neotree
+  :ensure t
+  :bind ("<f8>" . 'neotree-toggle)
+  :init
+  ;; slow rendering
+;;  (setq inhibit-compacting-font-caches t)
 
-;; setup dap mode
-;;(dap-mode 1)
-;;(dap-ui-mode 1)
-;;(define-key dap-mode-map (kbd "C-x C-a C-b") 'dap-breakpoint-add)
-;;(define-key dap-mode-map (kbd "C-x C-a C-d") 'dap-breakpoint-delete)
-;;(define-key dap-mode-map (kbd "C-c C-n") 'dap-next)
-;;(define-key dap-mode-map (kbd "C-c C-r") `dap-continue)
-;;(define-key dap-mode-map (kbd "C-c C-s") `dap-step-in)
-;;(define-key dap-mode-map (kbd "C-c C-c") `dap-eval-region)
-;;(define-key dap-mode-map (kbd "C-c C-p") `dap-eval-thing-at-point)
+  ;; set icons theme
+;;  (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
+
+  ;; Every time when the neotree window is opened, let it find current file and jump to node
+;;  (setq neo-smart-open t)
+
+  ;; When running ‘projectile-switch-project’ (C-c p p), ‘neotree’ will change root automatically
+;;  (setq projectile-switch-project-action 'neotree-projectile-action)
+
+  ;; show hidden files
+  (setq-default neo-show-hidden-files nil)
+  (setq neo-window-position 'right))
+
 
 (defun my/debug-directly ()
   (interactive)
@@ -78,8 +86,6 @@
                       :target-module nil
                       :request "launch"
                       :name "Python :: Run Configuration")))
-
-(define-key dap-mode-map (kbd "<f9>") `my/debug-directly)
 
 ;; delete trailing whitespace
 (defun my-prog-nuke-trailing-whitespace ()
@@ -91,9 +97,8 @@
 ;;(load-theme 'solarized-light t)
 (load-theme 'sanityinc-tomorrow-eighties t)
 
-
-(require 'window-purpose)
 (purpose-mode)
+(add-to-list 'purpose-user-mode-purposes '(tex-mode . code))
 (add-to-list 'purpose-user-mode-purposes '(python-mode . code))
 (add-to-list 'purpose-user-mode-purposes '(matlab-mode . code))
 (add-to-list 'purpose-user-mode-purposes '(emacs-lisp-mode . code))
@@ -101,11 +106,11 @@
 (add-to-list 'purpose-user-mode-purposes '(t-mode . code))
 (add-to-list 'purpose-user-mode-purposes '(dap-ui-repl-mode . repl))
 (add-to-list 'purpose-user-mode-purposes '(matlab-shell-mode . repl))
+(add-to-list 'purpose-user-mode-purposes '(dap-server-log-mode . info))
 (add-to-list 'purpose-user-mode-purposes '(compilation-mode . info))
-(add-to-list 'purpose-user-mode-purposes '(eshell-mode . info))
+(add-to-list 'purpose-user-mode-purposes '(eshell-mode . shell))
 (add-to-list 'purpose-user-mode-purposes '(treemacs-mode . treemacs))
 (purpose-compile-user-configuration)
-
 
 ;; setup macros, preferences
 (setq column-number-mode t)
@@ -174,83 +179,6 @@ buffer in current window."
       (untabify (point-min) (point-max)))
 
 
-(use-package treemacs
-  :ensure t
-  :defer t
-  :init
-  (with-eval-after-load 'winum
-    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-  :config
-  (progn
-    (setq treemacs-collapse-dirs                 (if (executable-find "python3") 3 0)
-          treemacs-deferred-git-apply-delay      0.5
-          treemacs-display-in-side-window        t
-          treemacs-eldoc-display                 t
-          treemacs-file-event-delay              5000
-          treemacs-file-follow-delay             0.2
-          treemacs-follow-after-init             t
-          treemacs-git-command-pipe              ""
-          treemacs-goto-tag-strategy             'refetch-index
-          treemacs-indentation                   2
-          treemacs-indentation-string            " "
-          treemacs-is-never-other-window         nil
-          treemacs-max-git-entries               5000
-          treemacs-missing-project-action        'ask
-          treemacs-no-png-images                 nil
-          treemacs-no-delete-other-windows       t
-          treemacs-position                      'right
-          treemacs-project-follow-cleanup        nil
-          treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-          treemacs-recenter-distance             0.1
-          treemacs-recenter-after-file-follow    nil
-          treemacs-recenter-after-tag-follow     nil
-          treemacs-recenter-after-project-jump   'always
-          treemacs-recenter-after-project-expand 'on-distance
-          treemacs-show-cursor                   nil
-          treemacs-show-hidden-files             t
-          treemacs-silent-filewatch              nil
-          treemacs-silent-refresh                nil
-          treemacs-sorting                       'alphabetic-desc
-          treemacs-space-between-root-nodes      t
-          treemacs-tag-follow-cleanup            t
-          treemacs-tag-follow-delay              1.5
-          treemacs-width                         35)
-
-    ;; The default width and height of the icons is 22 pixels. If you are
-    ;; using a Hi-DPI display, uncomment this to double the icon size.
-    ;;(treemacs-resize-icons 44)
-
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t)
-    (treemacs-fringe-indicator-mode t)
-    (pcase (cons (not (null (executable-find "git")))
-                 (not (null (executable-find "python3"))))
-      (`(t . t)
-       (treemacs-git-mode 'deferred))
-      (`(t . _)
-       (treemacs-git-mode 'simple))))
-  :bind
-  (:map global-map
-        ("M-0"       . treemacs-select-window)
-        ("C-x t 1"   . treemacs-delete-other-windows)
-        ("C-x t t"   . treemacs)
-        ("C-x t B"   . treemacs-bookmark)
-        ("C-x t C-t" . treemacs-find-file)
-        ("C-x t M-t" . treemacs-find-tag)))
-
-(use-package treemacs-projectile
-  :after treemacs projectile
-  :ensure t)
-
-(use-package treemacs-icons-dired
-  :after treemacs dired
-  :ensure t
-  :config (treemacs-icons-dired-mode))
-
-(use-package treemacs-magit
-  :after treemacs magit
-  :ensure t)
-
 (ivy-mode 1)
 (setq ivy-use-virtual-buffers t)
 (setq enable-recursive-minibuffers t)
@@ -276,3 +204,33 @@ buffer in current window."
 (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
 (define-key ivy-minibuffer-map (kbd "<ESC>") 'minibuffer-keyboard-quit)
 (define-key swiper-map (kbd "<ESC>") 'minibuffer-keyboard-quit)
+
+;;(defun dap-python--populate-start-file-args (conf)
+;;  "Populate CONF with the required arguments."
+;;  (let* ((host "localhost")
+;;         (debug-port (dap--find-available-port host (incf dap-python-default-debug-port)))
+;;         (python-executable (dap-python--pyenv-executable-find dap-python-executable))
+;;         (python-args (or (plist-get conf :args) ""))
+;;         (program (or (plist-get conf :target-module)
+;;                      (plist-get conf :program)
+;;                      (buffer-file-name)))
+;;         (module (plist-get conf :module)))
+;;
+;;    (dap--put-if-absent conf :program-to-start
+;;                        (format "%s%s -m ptvsd --wait --host %s --port %s %s %s %s"
+;;                                (or dap-python-terminal "")
+;;                                (shell-quote-argument python-executable)
+;;                                host
+;;                                debug-port
+;;                                (if module (concat "-m " (shell-quote-argument module)) "")
+;;                                (shell-quote-argument program)
+;;                                python-args))
+;;    (plist-put conf :program program)
+;;    (plist-put conf :debugServer debug-port)
+;;    (plist-put conf :port debug-port)
+;;    (plist-put conf :wait-for-port t)
+;;    (plist-put conf :hostName host)
+;;    (plist-put conf :host host)
+;;    conf))
+;;
+;;(eval-defun)
