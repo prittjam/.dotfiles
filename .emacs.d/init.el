@@ -1,18 +1,19 @@
 (package-initialize)
-;;(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+
+(add-to-list 'package-archives
+	     '("gnu" . "http://elpa.gnu.org/packages/"))
 (require 'package)
 (require 'cl)
 (setq package-check-signature nil)
 (package-refresh-contents)
 
+(setq pop-up-windows nil)
+
 ;;list the packages you want
 (setq package-list
-      '(lsp-mode lsp-python-ms lsp-python
-                 color-theme-sanityinc-tomorrow lsp-ui
-                 company-lsp dap-mode  window-purpose
-                 buffer-move jedi matlab-mode pyvenv
-                 ivy swiper yasnippet))
+      '(color-theme-sanityinc-tomorrow
+	window-purpose buffer-move jedi pyvenv ivy swiper yasnippet))
 
 ;; install the missing packages
 (dolist (package package-list)
@@ -22,25 +23,40 @@
 (require 'color-theme-sanityinc-tomorrow)
 (require 'window-purpose)
 
+(pyvenv-mode 1)
+(pyvenv-activate "/home/jbpritts/.conda/envs")
+
 (setq package-enable-at-startup nil)
 
-(yas-global-mode 1)
+(require 'use-package)
 
-(eval-when-compile
-  (require 'use-package))
+(add-to-list 'load-path "~/Downloads/old_matlab/")
+(load-library "matlab-load")
+
+(add-hook 'python-mode-hook
+    (lambda ()
+        (setq indent-tabs-mode nil)
+        (infer-indentation-style)))
 
 (use-package lsp-mode
   :config
   (require 'lsp-clients)
   (add-hook 'python-mode-hook 'lsp))
+
+(defvar lsp-language-id-configuration
+  '(...
+    (python-mode . "python")
+    ...))
+
+(lsp-register-client
+ (make-lsp-client :new-connection (lsp-stdio-connection "pyls")
+                  :major-modes '(python-mode)
+                  :server-id 'pyls))
+
 (use-package company-lsp)
 (use-package lsp-ui)
-
 (use-package dap-mode
-  :ensure t
-  :init
-  :config
-  :bind (:map lsp-mode-map
+  :bind (:map dap-mode-map
 	      ("<f10>" . dap-debug-last)
 	      ("<f11>" . my/debug-directly)
 	      ("C-x C-a C-b" . dap-breakpoint-add)
@@ -50,12 +66,9 @@
 	      ("C-c C-s" . dap-step-in)
 	      ("C-c C-c" . dap-eval-region)
 	      ("C-c C-p" . dap-eval-thing-at-point))
-
-  :hook ((after-init . dap-mode)
-	 (dap-mode . dap-ui-mode)
-	 (python-mode . (lambda () (require 'dap-python)))))
-
-;;(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+  :hook ((dap-mode . dap-ui-mode)
+	 (python-mode . (lambda () (require 'dap-python)
+			  (dap-mode)))))
 
 (use-package neotree
   :ensure t
@@ -73,19 +86,18 @@
   ;; When running ‘projectile-switch-project’ (C-c p p), ‘neotree’ will change root automatically
 ;;  (setq projectile-switch-project-action 'neotree-projectile-action)
 
-  ;; show hidden files
-  (setq-default neo-show-hidden-files nil)
-  (setq neo-window-position 'right))
-
+;; show hidden files
+(setq-default neo-show-hidden-files nil)
+(setq neo-window-position 'right))
 
 (defun my/debug-directly ()
   (interactive)
-  (dap-debug    (list :type "python"
-                      :args ""
-                      :cwd nil
-                      :target-module nil
-                      :request "launch"
-                      :name "Python :: Run Configuration")))
+  (dap-debug (list :type "python"
+		   :args ""
+		   :cwd nil
+		   :target-module nil
+		   :request "launch"
+		   :name "Python :: Run Configuration")))
 
 ;; delete trailing whitespace
 (defun my-prog-nuke-trailing-whitespace ()
@@ -93,8 +105,6 @@
     (delete-trailing-whitespace)))
 (add-hook 'before-save-hook 'my-prog-nuke-trailing-whitespace)
 
-;; setup solarized light
-;;(load-theme 'solarized-light t)
 (load-theme 'sanityinc-tomorrow-eighties t)
 
 (purpose-mode)
@@ -110,6 +120,8 @@
 (add-to-list 'purpose-user-mode-purposes '(compilation-mode . info))
 (add-to-list 'purpose-user-mode-purposes '(eshell-mode . shell))
 (add-to-list 'purpose-user-mode-purposes '(treemacs-mode . treemacs))
+(add-to-list 'purpose-user-mode-purposes '(treemacs-mode . treemacs))
+(add-to-list 'purpose-user-mode-purposes '(fundamental-mode . info))
 (purpose-compile-user-configuration)
 
 ;; setup macros, preferences
@@ -117,59 +129,35 @@
 (global-set-key [f9] 'recompile)
 (global-set-key [f5] 'my/debug-directly)
 (global-set-key [remap list-buffers] 'ibuffer)
-
-;; setup yasnippets
-;;(require 'yasnippet)
-;;(yas-global-mode 1)
+;;
 
 (global-set-key (kbd "C-x b") 'ivy-switch-buffer)
-
+;;
 ;; setup windmove
 (windmove-default-keybindings)
 (global-set-key (kbd "S-<right>") 'windmove-right)
 (global-set-key (kbd "S-<left>") 'windmove-left)
 (global-set-key (kbd "S-<up>") 'windmove-up)
 (global-set-key (kbd "S-<down>") 'windmove-down)
-
+;;
 (use-package buffer-move)
 (global-set-key (kbd "<C-S-up>")     'buf-move-up)
 (global-set-key (kbd "<C-S-down>")   'buf-move-down)
 (global-set-key (kbd "<C-S-left>")   'buf-move-left)
 (global-set-key (kbd "<C-S-right>")  'buf-move-right)
-
+;;
 ;; setup MATLAB
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(matlab-shell-command "matlab")
- '(matlab-shell-command-switches (quote ("-nodesktop -nosplash")))
- '(package-selected-packages
-   (quote
-    (0blayout counsel treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil buffer-move ms-python window-purpose yasnippet-snippets yasnippet-classic-snippets use-package sr-speedbar solarized-theme pyenv-mode py-autopep8 projectile matlab-mode material-theme magit lsp-ui lsp-treemacs lsp-python-ms lsp-python lsp-java jupyter helm-lsp flycheck elpy dap-mode company-lsp company-jedi company-box))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-
-(defun toggle-window-dedicated ()
-  "Control whether or not Emacs is allowed to display another
-buffer in current window."
-  (interactive)
-  (message
-   (if (let (window (get-buffer-window (current-buffer)))
-         (set-window-dedicated-p window (not (window-dedicated-p window))))
-       "%s: Can't touch this!"
-     "%s is up for grabs.")
-   (current-buffer)))
-
-(global-set-key (kbd "C-c t") 'toggle-window-dedicated)
-
-;; default to python3.6
-(pyvenv-activate "~/.venv/py36")
+ (autoload 'matlab-mode "matlab" "Matlab Editing Mode" t)
+ (add-to-list
+  'auto-mode-alist
+  '("\\.m$" . matlab-mode))
+ (setq matlab-indent-function t)
+ (setq matlab-shell-command "matlab")
 
 (add-hook 'python-mode-hook
       (lambda ()
@@ -178,7 +166,23 @@ buffer in current window."
         (setq tab-width 4))
       (untabify (point-min) (point-max)))
 
+ ;;
+;;(defun toggle-window-dedicated ()
+;;  "Control whether or not Emacs is allowed to display another
+;;buffer in current window."
+;;  (interactive)
+;;  (message
+;;   (if (let (window (get-buffer-window (current-buffer)))
+;;         (set-window-dedicated-p window (not (window-dedicated-p window))))
+;;       "%s: Can't touch this!"
+;;     "%s is up for grabs.")
+;;   (current-buffer)))
+;;
+;;(global-set-key (kbd "C-c t") 'toggle-window-dedicated)
+;;
 
+;;
+;;
 (ivy-mode 1)
 (setq ivy-use-virtual-buffers t)
 (setq enable-recursive-minibuffers t)
@@ -234,3 +238,17 @@ buffer in current window."
 ;;    conf))
 ;;
 ;;(eval-defun)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (yasnippet window-purpose use-package tree-mode swiper pyvenv neotree matlab-mode lsp-ui lsp-python-ms jedi dap-mode company-lsp color-theme-sanityinc-tomorrow buffer-move))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
