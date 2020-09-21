@@ -30,8 +30,8 @@
 
 (require 'use-package)
 
-(add-to-list 'load-path "~/Downloads/old_matlab/")
-(load-library "matlab-load")
+;;(add-to-list 'load-path "~/.emacs.d/old_matlab/")
+;;(load-library "matlab-load")
 
 (add-hook 'python-mode-hook
     (lambda ()
@@ -48,10 +48,10 @@
     (python-mode . "python")
     ...))
 
-(lsp-register-client
- (make-lsp-client :new-connection (lsp-stdio-connection "pyls")
-                  :major-modes '(python-mode)
-                  :server-id 'pyls))
+;;(lsp-register-client
+;; (make-lsp-client :new-connection (lsp-stdio-connection "pyls")
+;;                  :major-modes '(python-mode)
+;;                  :server-id 'pyls))
 
 (use-package company-lsp)
 (use-package lsp-ui)
@@ -147,17 +147,17 @@
 (global-set-key (kbd "<C-S-right>")  'buf-move-right)
 ;;
 ;; setup MATLAB
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- (autoload 'matlab-mode "matlab" "Matlab Editing Mode" t)
- (add-to-list
-  'auto-mode-alist
-  '("\\.m$" . matlab-mode))
- (setq matlab-indent-function t)
- (setq matlab-shell-command "matlab")
+;;(custom-set-variables
+;; ;; custom-set-variables was added by Custom.
+;; ;; If you edit it by hand, you could mess it up, so be careful.
+;; ;; Your init file should contain only one such instance.
+;; ;; If there is more than one, they won't work right.
+;; (autoload 'matlab-mode "matlab" "Matlab Editing Mode" t)
+;; (add-to-list
+;;  'auto-mode-alist
+;;  '("\\.m$" . matlab-mode))
+;; (setq matlab-indent-function t)
+;; (setq matlab-shell-command "matlab")
 
 (add-hook 'python-mode-hook
       (lambda ()
